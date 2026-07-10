@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IndustrCons Engineering Comics — IRE-3</title>
+<meta name="description" content="Interactive engineering comics. Make real site decisions and learn construction practice.">
+<link rel="icon" href="assets/logo.jpg">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="light">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo.jpg" alt="IndustrCons logo">
+      <div>
+        <div class="name">Industr<span>CONS</span></div>
+        <div class="tag">IRE‑3 · ENGINEERING COMICS</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="xp-pill">⚡ <span id="xp-pill-val">0 XP</span></div>
+      <button class="icon-btn" id="sound-toggle" title="Toggle sound">🔊</button>
+      <button class="icon-btn" id="theme-toggle" title="Toggle dark mode">🌙</button>
+    </div>
+  </header>
+
+  <!-- HOME VIEW -->
+  <main id="view-home" class="view active"></main>
+
+  <!-- LIBRARY VIEW -->
+  <main id="view-library" class="view"></main>
+
+  <!-- PROFILE VIEW -->
+  <main id="view-profile" class="view"></main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button data-view="home" class="active"><span class="ic">🏠</span>Home</button>
+    <button data-view="library"><span class="ic">📚</span>Library</button>
+    <button id="random-btn"><span class="ic">🎲</span>Random</button>
+    <button data-view="profile"><span class="ic">🧑‍🚀</span>Profile</button>
+  </nav>
+
+  <!-- READER OVERLAY -->
+  <section class="reader" id="reader">
+    <div class="reader-top">
+      <button class="icon-btn" onclick="closeReader()">✕</button>
+      <div class="title" id="reader-title">Comic</div>
+    </div>
+    <div class="progressbar"><div class="progressbar-fill" id="reader-progress"></div></div>
+    <div class="reader-body" id="reader-body"></div>
+    <div class="reader-nav" id="reader-nav"></div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="illustrations.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
