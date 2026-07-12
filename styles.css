@@ -344,6 +344,47 @@ a{color:inherit;text-decoration:none;}
 }
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+/* ---------- learn more / cross-promo ---------- */
+.learnmore-box{
+  width:100%; max-width:560px; margin-top:16px; background:var(--panel-bg); border:3px solid var(--border);
+  border-radius:16px; padding:16px; box-shadow:0 4px 0 var(--border);
+}
+.learnmore-box h4{ margin:0 0 4px; font-size:15px; }
+.learnmore-sub{ margin:0 0 12px; font-size:12px; color:var(--text-soft); }
+.learnmore-links{ display:flex; flex-direction:column; gap:8px; }
+.learnmore-link{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px;
+  border:2px solid var(--border); background:var(--bg); text-decoration:none; color:var(--text);
+  transition:transform .12s ease;
+}
+.learnmore-link:active{ transform:translateY(2px); }
+.learnmore-link .lm-ic{ font-size:20px; flex:0 0 auto; }
+.learnmore-link .lm-text{ flex:1; display:flex; flex-direction:column; line-height:1.25; }
+.learnmore-link .lm-text strong{ font-size:13px; }
+.learnmore-link .lm-text small{ font-size:11px; color:var(--text-soft); font-weight:600; }
+.learnmore-link .lm-arrow{ font-size:16px; color:var(--navy-3); flex:0 0 auto; }
+
+/* ---------- certificates ---------- */
+.cert-card{
+  background: linear-gradient(135deg, #fff9ee, #fff);
+  border:3px solid var(--border); border-radius:16px; padding:16px;
+  box-shadow:0 4px 0 var(--border); position:relative; text-align:center;
+}
+[data-theme="dark"] .cert-card{ background: linear-gradient(135deg, #201a10, #141d2c); }
+.cert-card .cert-ribbon{ font-size:16px; margin-bottom:4px; }
+.cert-card h4{ margin:2px 0 4px; font-size:15px; color:var(--navy-3); }
+.cert-card p{ margin:2px 0; font-size:13px; }
+.cert-card .cert-sub{ color:var(--text-soft); font-size:11.5px; }
+
+/* ---------- leaderboard ---------- */
+.lb-row{
+  display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px;
+  background:var(--panel-bg); border:2px solid var(--border); font-size:13px; font-weight:700;
+}
+.lb-row .lb-rank{ width:28px; color:var(--text-soft); }
+.lb-row .lb-name{ flex:1; }
+.lb-row.lb-you{ background:linear-gradient(135deg, var(--gold), var(--orange)); color:#1b1305; }
+
 .view{display:none;}
 .view.active{display:block;}
 
