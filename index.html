@@ -1,19 +1,114 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>IndustrCons Engineering Comics — IRE-3</title>
-<meta name="description" content="Interactive engineering comics. Make real site decisions and learn construction practice.">
-<link rel="icon" href="assets/logo.jpg">
+
+<!-- ============================================================
+     SITE CONFIG — replace SITE_URL with your real deployed URL
+     (e.g. https://yourname.github.io/industrcons-engineering-comics/)
+     in THIS file, sitemap.xml and robots.txt after deploying.
+     ============================================================ -->
+<script>
+  window.INDUSTRCONS_SITE_URL = "https://industrcons.github.io/engineering-comics/";
+</script>
+
+<title>IndustrCons Engineering Comics — IRE‑3</title>
+<meta name="description" content="Interactive engineering comics from IndustrCons. Step into the boots of a construction engineer, make real site decisions, and learn concrete, rebar, formwork, excavation, steel, road, bridge, survey and procurement practice.">
+<meta name="author" content="IndustrCons">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://industrcons.github.io/engineering-comics/">
+<link rel="icon" href="assets/logo.png">
+<link rel="apple-touch-icon" href="assets/logo.png">
 <link rel="stylesheet" href="styles.css">
+
+<!-- ============================================================
+     OPEN GRAPH / SOCIAL SHARING
+     ============================================================ -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="IndustrCons">
+<meta property="og:title" content="IndustrCons Engineering Comics — IRE‑3">
+<meta property="og:description" content="Interactive engineering comics where you play the engineer. Make real construction decisions across concrete, rebar, formwork, excavation, steel, road, bridge, survey and procurement scenarios — then see how each choice plays out.">
+<meta property="og:image" content="https://industrcons.github.io/engineering-comics/assets/logo-og.jpg">
+<meta property="og:image:alt" content="IndustrCons — Industry Ready Engineer logo">
+<meta property="og:url" content="https://industrcons.github.io/engineering-comics/">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="IndustrCons Engineering Comics — IRE‑3">
+<meta name="twitter:description" content="Interactive engineering comics where you play the engineer — real site decisions, real consequences.">
+<meta name="twitter:image" content="https://industrcons.github.io/engineering-comics/assets/logo-og.jpg">
+
+<!-- ============================================================
+     STRUCTURED DATA (schema.org JSON-LD)
+     Site-level schemas are static here. Per-comic CreativeWork /
+     Breadcrumb schema is generated from data.js and injected by
+     app.js (see injectComicCatalogSchema / updateSEOForStory).
+     ============================================================ -->
+
+<!-- Organization -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "IndustrCons",
+  "alternateName": "IndustrCons IRE-3",
+  "url": "https://industrcons.github.io/engineering-comics/",
+  "logo": "https://industrcons.github.io/engineering-comics/assets/logo-og.jpg",
+  "description": "IndustrCons builds Industry Ready Engineer (IRE) training tools for construction professionals, including interactive engineering comics, an estimator, technical documentation, and an AI assistant."
+}
+</script>
+
+<!-- ComicSeries -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ComicSeries",
+  "name": "IndustrCons Engineering Comics",
+  "alternateName": "IRE-3 Engineering Comics",
+  "url": "https://industrcons.github.io/engineering-comics/",
+  "image": "https://industrcons.github.io/engineering-comics/assets/logo-og.jpg",
+  "description": "An interactive comic series where the reader plays a construction engineer, making real site decisions across concrete, rebar, formwork, excavation, foundations, steel structures, road construction, bridge construction, survey/BIM and procurement scenarios.",
+  "genre": ["Engineering Education", "Construction Training", "Interactive Fiction"],
+  "inLanguage": "en",
+  "publisher": {
+    "@type": "Organization",
+    "name": "IndustrCons",
+    "logo": { "@type": "ImageObject", "url": "https://industrcons.github.io/engineering-comics/assets/logo-og.jpg" }
+  }
+}
+</script>
+
+<!-- ImageObject (logo) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ImageObject",
+  "contentUrl": "https://industrcons.github.io/engineering-comics/assets/logo-og.jpg",
+  "url": "https://industrcons.github.io/engineering-comics/assets/logo-og.jpg",
+  "name": "IndustrCons Logo",
+  "description": "Official IndustrCons IRE-3 logo",
+  "creator": { "@type": "Organization", "name": "IndustrCons" }
+}
+</script>
+
+<!-- BreadcrumbList (site-level) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://industrcons.github.io/engineering-comics/" },
+    { "@type": "ListItem", "position": 2, "name": "Comic Library", "item": "https://industrcons.github.io/engineering-comics/#library" }
+  ]
+}
+</script>
 </head>
 <body data-theme="light">
 
   <!-- TOP BAR -->
   <header class="topbar">
     <div class="brand">
-      <img src="assets/logo.jpg" alt="IndustrCons logo">
+      <img src="assets/logo.png" alt="IndustrCons — Industry Ready Engineer logo">
       <div>
         <div class="name">Industr<span>CONS</span></div>
         <div class="tag">IRE‑3 · ENGINEERING COMICS</div>
@@ -61,3 +156,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
