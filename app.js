@@ -17,9 +17,13 @@ const BADGES = [
   {id:"first_blueprint", label:"First Blueprint", ic:"📘", test:s=>Object.keys(s.completed).length>=1},
   {id:"zero_accident",   label:"Zero Accident",    ic:"🦺", test:s=>Object.values(s.completed).some(c=>c.type==="safety" && c.stars>=5)},
   {id:"quality_guardian",label:"Quality Guardian", ic:"🧱", test:s=>Object.values(s.completed).filter(c=>c.type==="quality" && c.stars>=5).length>=3},
+  {id:"budget_guardian", label:"Budget Guardian",  ic:"💰", test:s=>Object.values(s.completed).some(c=>c.type==="budget" && c.stars>=5)},
   {id:"perfectionist",   label:"Perfectionist",    ic:"⭐", test:s=>Object.values(s.completed).filter(c=>c.stars>=5).length>=5},
   {id:"century_club",    label:"Century Club",     ic:"💯", test:s=>s.xp>=500},
   {id:"streak_keeper",   label:"Streak Keeper",    ic:"🔥", test:s=>s.streak>=3},
+  {id:"iron_streak",     label:"Iron Streak",      ic:"🔱", test:s=>s.streak>=7},
+  {id:"explorer",        label:"Explorer",         ic:"🧭", test:s=>(s.everOpened||[]).length>=5},
+  {id:"comic_collector", label:"Comic Collector",  ic:"📚", test:s=>Object.keys(s.completed).length>=STORIES.length},
   {id:"all_rounder",     label:"All Rounder",      ic:"🌍", test:s=>{
       const cats = new Set(STORIES.map(x=>x.category));
       const done = new Set(Object.keys(s.completed).map(id=>STORIES.find(x=>x.id===id)?.category));
@@ -29,7 +33,7 @@ const BADGES = [
 
 function defaultState(){
   return { xp:0, streak:0, lastPlayedDay:null, completed:{}, bookmarks:[], favorites:[], recent:[],
-           badgesEarned:[], theme:"light", sound:true, dailySeed:null, dailyDoneDay:null };
+           badgesEarned:[], theme:"light", sound:true, dailySeed:null, dailyDoneDay:null, everOpened:[] };
 }
 
 let STATE = loadState();
@@ -119,6 +123,108 @@ function toast(msg){
   el.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>el.classList.remove("show"), 2200);
+}
+
+/* ============================================================
+   SEO / STRUCTURED DATA
+   Site-level Organization / ComicSeries / ImageObject / Breadcrumb
+   schemas live statically in index.html <head>. This block adds:
+   1) a static-at-load ItemList of CreativeWork (one per comic),
+      generated from data.js so it always matches the real catalog.
+   2) dynamic per-comic CreativeWork + BreadcrumbList + meta/OG/title
+      updates while a comic is open, reverted on close.
+   ============================================================ */
+const SEO_SITE_URL = (window.INDUSTRCONS_SITE_URL || "https://industrcons.github.io/engineering-comics/").replace(/\/?$/, "/");
+const SEO_DEFAULT_TITLE = "IndustrCons Engineering Comics — IRE‑3";
+const SEO_DEFAULT_DESC = document.querySelector('meta[name="description"]')?.content || "";
+
+function setOrCreateLdScript(id, obj){
+  let el = document.getElementById(id);
+  if(!el){
+    el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.id = id;
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(obj);
+}
+function removeLdScript(id){
+  const el = document.getElementById(id);
+  if(el) el.remove();
+}
+function setMeta(selector, content){
+  const el = document.querySelector(selector);
+  if(el) el.setAttribute("content", content);
+}
+
+function injectComicCatalogSchema(){
+  const itemList = {
+    "@context":"https://schema.org",
+    "@type":"ItemList",
+    "name":"IndustrCons Engineering Comics Catalog",
+    "itemListElement": STORIES.map((s,i)=>({
+      "@type":"ListItem",
+      "position": i+1,
+      "item": {
+        "@type":"CreativeWork",
+        "name": s.title,
+        "description": s.description,
+        "genre": s.category,
+        "educationalLevel": s.difficulty,
+        "timeRequired": "PT"+s.readTime+"M",
+        "isPartOf": { "@type":"ComicSeries", "name":"IndustrCons Engineering Comics" },
+        "url": SEO_SITE_URL + "#comic=" + s.id
+      }
+    }))
+  };
+  setOrCreateLdScript("schema-catalog", itemList);
+}
+
+function updateSEOForStory(story){
+  document.title = story.title + " — IndustrCons Engineering Comics";
+  setMeta('meta[name="description"]', story.description);
+  setMeta('meta[property="og:title"]', story.title + " — IndustrCons Engineering Comics");
+  setMeta('meta[property="og:description"]', story.description);
+  setMeta('meta[property="og:url"]', SEO_SITE_URL + "#comic=" + story.id);
+  setMeta('meta[name="twitter:title"]', story.title);
+  setMeta('meta[name="twitter:description"]', story.description);
+
+  setOrCreateLdScript("schema-comic-creativework", {
+    "@context":"https://schema.org",
+    "@type":"CreativeWork",
+    "name": story.title,
+    "description": story.description,
+    "genre": story.category,
+    "educationalLevel": story.difficulty,
+    "timeRequired": "PT"+story.readTime+"M",
+    "isPartOf": { "@type":"ComicSeries", "name":"IndustrCons Engineering Comics", "url": SEO_SITE_URL },
+    "publisher": { "@type":"Organization", "name":"IndustrCons" },
+    "url": SEO_SITE_URL + "#comic=" + story.id,
+    "image": SEO_SITE_URL + "assets/logo-og.jpg"
+  });
+
+  setOrCreateLdScript("schema-comic-breadcrumb", {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      { "@type":"ListItem", "position":1, "name":"Home", "item": SEO_SITE_URL },
+      { "@type":"ListItem", "position":2, "name":"Comic Library", "item": SEO_SITE_URL + "#library" },
+      { "@type":"ListItem", "position":3, "name": story.category, "item": SEO_SITE_URL + "#library&category=" + encodeURIComponent(story.category) },
+      { "@type":"ListItem", "position":4, "name": story.title, "item": SEO_SITE_URL + "#comic=" + story.id }
+    ]
+  });
+}
+
+function resetSEODefault(){
+  document.title = SEO_DEFAULT_TITLE;
+  setMeta('meta[name="description"]', SEO_DEFAULT_DESC);
+  setMeta('meta[property="og:title"]', SEO_DEFAULT_TITLE);
+  setMeta('meta[property="og:description"]', SEO_DEFAULT_DESC);
+  setMeta('meta[property="og:url"]', SEO_SITE_URL);
+  setMeta('meta[name="twitter:title"]', SEO_DEFAULT_TITLE);
+  setMeta('meta[name="twitter:description"]', SEO_DEFAULT_DESC);
+  removeLdScript("schema-comic-creativework");
+  removeLdScript("schema-comic-breadcrumb");
 }
 
 /* ============================================================
@@ -354,6 +460,8 @@ function renderProfile(){
           </div>`).join('')}
       </div>
     </div>
+    ${renderCertificatesSection()}
+    ${renderLeaderboardSection()}
     <div class="section">
       <div class="section-head"><h2>📊 Completion by Category</h2></div>
       <div style="padding:0 16px; display:flex; flex-direction:column; gap:10px;">
@@ -372,6 +480,86 @@ function renderProfile(){
     </div>
   `;
 }
+function renderCertificatesSection(){
+  const certs = Object.entries(STATE.completed)
+    .filter(([id,c])=>c.stars>=4)
+    .map(([id,c])=>({story:STORIES.find(s=>s.id===id), c}))
+    .filter(x=>x.story);
+  if(!certs.length) return '';
+  return `
+    <div class="section">
+      <div class="section-head"><h2>🎓 Certificates</h2></div>
+      <div style="padding:0 16px; display:flex; flex-direction:column; gap:10px;">
+        ${certs.map(({story,c})=>`
+          <div class="cert-card">
+            <div class="cert-ribbon">${"⭐".repeat(c.stars)}</div>
+            <h4>Certificate of Excellence</h4>
+            <p><strong>${story.title}</strong> — ${story.category}</p>
+            <p class="cert-sub">Awarded for achieving "${c.title}"</p>
+            <button class="btn primary" style="margin-top:8px;" onclick="printCertificate('${story.id}')">🖨️ Print / Save Certificate</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function printCertificate(id){
+  const story = STORIES.find(s=>s.id===id);
+  const c = STATE.completed[id];
+  if(!story||!c) return;
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <html><head><title>Certificate — ${story.title}</title>
+    <style>
+      body{font-family:'Baloo 2','Comic Sans MS',cursive; text-align:center; padding:60px; background:#f4f6f9;}
+      .card{border:6px solid #10151d; border-radius:24px; padding:50px; max-width:640px; margin:0 auto; background:#fff;}
+      h1{color:#1c4b82; font-size:34px; margin-bottom:6px;}
+      h2{color:#f5941f; font-size:22px;}
+      .stars{font-size:30px; margin:14px 0;}
+      p{font-size:16px; color:#333;}
+      .brand{font-weight:800; margin-top:30px; color:#5b6675; font-size:13px;}
+    </style></head>
+    <body>
+      <div class="card">
+        <h1>🏗️ Certificate of Excellence</h1>
+        <h2>${story.title}</h2>
+        <div class="stars">${"⭐".repeat(c.stars)}</div>
+        <p>This certifies that an Industry Ready Engineer successfully completed this scenario with the outcome:</p>
+        <p><strong>${c.title}</strong></p>
+        <p>Category: ${story.category}</p>
+        <div class="brand">IndustrCons Engineering Comics · IRE-3</div>
+      </div>
+      <script>window.print();</script>
+    </body></html>
+  `);
+  w.document.close();
+}
+
+function renderLeaderboardSection(){
+  const seedNames = ["Aylin K.","Rashad M.","Elvin T.","Nigar S.","Kamran V.","Leyla R.","Tural H.","Sabina Q."];
+  const day = todayStr();
+  const npcs = seedNames.map((name,i)=>{
+    const seed = hashCode(day+name);
+    const xp = 80 + Math.abs(seed % 900) + i*23;
+    return {name, xp};
+  });
+  const all = [...npcs, {name:"You", xp:STATE.xp, isYou:true}].sort((a,b)=>b.xp-a.xp);
+  return `
+    <div class="section">
+      <div class="section-head"><h2>🏆 Your Site Crew Leaderboard</h2></div>
+      <p style="padding:0 16px; margin:-4px 0 10px; font-size:11.5px; color:var(--text-soft);">A local, on-device comparison to keep you motivated — not a live global ranking.</p>
+      <div style="padding:0 16px; display:flex; flex-direction:column; gap:8px;">
+        ${all.map((p,i)=>`
+          <div class="lb-row ${p.isYou?'lb-you':''}">
+            <span class="lb-rank">#${i+1}</span>
+            <span class="lb-name">${p.isYou?'🧑‍🚀 ':''}${p.name}</span>
+            <span class="lb-xp">${p.xp} XP</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
 function resetProgress(){
   if(!confirm("This clears all XP, badges, and progress on this device. Continue?")) return;
   const theme=STATE.theme, sound=STATE.sound;
@@ -391,14 +579,18 @@ function openReader(id){
   readerVisited = [readerNodeId];
   if(!STATE.recent.includes(id)){ STATE.recent.unshift(id); STATE.recent = STATE.recent.slice(0,12); }
   else{ STATE.recent = [id, ...STATE.recent.filter(x=>x!==id)]; }
+  if(!STATE.everOpened) STATE.everOpened=[];
+  if(!STATE.everOpened.includes(id)) STATE.everOpened.push(id);
   saveState();
   document.getElementById("reader").classList.add("open");
   document.getElementById("reader-title").textContent = readerStory.title;
+  updateSEOForStory(readerStory);
   renderReaderNode();
   sfx.page();
 }
 function closeReader(){
   document.getElementById("reader").classList.remove("open");
+  resetSEODefault();
   renderHome(); renderLibrary();
 }
 
@@ -479,17 +671,28 @@ function pickChoice(i){
   document.getElementById("reader-body").scrollTo({top:0,behavior:"smooth"});
 }
 
+function endingColor(type){
+  const map = { quality:"#2fae66", safety:"#2fae66", budget:"#2fae66",
+    "client-satisfaction":"#f9b233", "project-delay":"#f5941f",
+    "quality-failure":"#e5484d", "safety-incident":"#e5484d",
+    "contract-problem":"#e5484d", "budget-problem":"#e5484d" };
+  return map[type] || "#10151d";
+}
+
 function renderEnding(node){
   const e = node.ending;
   bumpStreak();
   const isDaily = readerStory.id === dailyChallenge().id;
   const alreadyCompleted = !!STATE.completed[readerStory.id];
+  const rankBefore = getRank(STATE.xp);
   let gainedXp = 0;
   if(!alreadyCompleted){
     gainedXp = e.xp;
     if(isDaily && STATE.dailyDoneDay !== todayStr()){ gainedXp += Math.round(readerStory.xp*0.5); STATE.dailyDoneDay = todayStr(); }
     STATE.xp += gainedXp;
   }
+  const rankAfter = getRank(STATE.xp);
+  const rankedUp = rankAfter.title !== rankBefore.title;
   STATE.completed[readerStory.id] = { type:e.type, stars:e.stars, title:e.title };
   const newBadges = checkBadges();
   saveState();
@@ -501,7 +704,7 @@ function renderEnding(node){
     <div class="panel-wrap">
       <div class="comic-panel halftone" style="max-height:210px; overflow:hidden;">${panelSvg}</div>
     </div>
-    <div class="ending-card">
+    <div class="ending-card" style="border-color:${endingColor(e.type)}">
       <div class="stars">${stars}</div>
       <h2>${e.title}</h2>
       ${gainedXp>0 ? `<div class="xp-gain">+${gainedXp} XP</div>` : `<div class="xp-gain" style="opacity:.7">Already completed — no new XP</div>`}
@@ -519,6 +722,7 @@ function renderEnding(node){
       ${e.quiz.options.map((o,i)=>`<button class="quiz-opt" onclick="answerQuiz(${i},${e.quiz.answer})">${o}</button>`).join('')}
       <div class="quiz-feedback" id="quiz-feedback"></div>
     </div>
+    ${renderLearnMoreBlock()}
   `;
   document.getElementById("reader-nav").innerHTML = `
     <button class="btn ghost" onclick="closeReader()">🏠 Home</button>
@@ -526,7 +730,8 @@ function renderEnding(node){
   `;
 
   if(e.stars>=4){ fireConfetti(); }
-  if(newBadges.length){ setTimeout(()=>toast("🏅 New badge: "+newBadges[0].label), 700); }
+  if(rankedUp){ setTimeout(()=>{ toast("🎖️ Ranked up: "+rankAfter.emoji+" "+rankAfter.title); fireConfetti(); }, 900); }
+  if(newBadges.length){ setTimeout(()=>toast("🏅 New badge: "+newBadges[0].label), rankedUp?1900:700); }
 }
 
 function answerQuiz(i, correctIdx){
@@ -540,6 +745,32 @@ function answerQuiz(i, correctIdx){
   const fb = document.getElementById("quiz-feedback");
   if(i===correctIdx){ fb.textContent="✅ Correct! Great engineering instinct."; sfx.xp(); }
   else{ fb.textContent="❌ Not quite — the highlighted answer is correct. Review the tip above!"; sfx.bad(); }
+}
+
+function renderLearnMoreBlock(){
+  return `
+    <div class="learnmore-box">
+      <h4>📚 Learn More</h4>
+      <p class="learnmore-sub">Keep building your site knowledge with the rest of the IndustrCons IRE-3 toolkit.</p>
+      <div class="learnmore-links">
+        <a class="learnmore-link" href="https://industrconsestimator.netlify.app/" target="_blank" rel="noopener noreferrer">
+          <span class="lm-ic">🧮</span>
+          <span class="lm-text"><strong>Related Knowledge</strong><small>IndustrCons Estimator</small></span>
+          <span class="lm-arrow">↗</span>
+        </a>
+        <a class="learnmore-link" href="https://industrconsdocs.netlify.app/" target="_blank" rel="noopener noreferrer">
+          <span class="lm-ic">📄</span>
+          <span class="lm-text"><strong>Related Documents</strong><small>IndustrCons Docs</small></span>
+          <span class="lm-arrow">↗</span>
+        </a>
+        <a class="learnmore-link" href="https://industrcons-ai.vercel.app/" target="_blank" rel="noopener noreferrer">
+          <span class="lm-ic">🤖</span>
+          <span class="lm-text"><strong>Ask IndustrCons AI</strong><small>Get a straight answer, fast</small></span>
+          <span class="lm-arrow">↗</span>
+        </a>
+      </div>
+    </div>
+  `;
 }
 
 function replayStory(){
@@ -577,6 +808,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
   applyTheme();
   applySoundIcon();
   updateXpPill();
+  injectComicCatalogSchema();
   showView("home");
 
   document.querySelectorAll(".bottom-nav button").forEach(b=>{
