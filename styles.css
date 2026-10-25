@@ -232,7 +232,7 @@ a{color:inherit;text-decoration:none;}
 .universe-card .uc-avatar{
   width:84px; height:84px; border-radius:22px; margin:0 auto 6px; position:relative;
   background:var(--glass-bg); border:1px solid var(--glass-border); backdrop-filter:blur(10px);
-  display:flex; align-items:center; justify-content:center; font-size:34px;
+  display:flex; align-items:center; justify-content:center; font-size:34px; overflow:hidden;
   box-shadow:0 6px 18px rgba(0,0,0,.25);
   transition:transform .2s ease, box-shadow .2s ease;
 }
@@ -616,3 +616,12 @@ a{color:inherit;text-decoration:none;}
   .card-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
   .panel-wrap, .ending-card, .summary-block, .quiz-box, .learnmore-box, .rate-note-box{max-width:620px;}
 }
+
+/* v4 character animation + cinematic panels */
+.uc-avatar svg{ width:100%; height:100%; display:block; }
+@keyframes charIdle{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-2.5px) } }
+@keyframes charBlink{ 0%,92%,100%{ transform:scaleY(1) } 95%{ transform:scaleY(.1) } }
+.char-idle{ animation:charIdle 3.2s ease-in-out infinite; }
+.char-eyes{ transform-box:fill-box; transform-origin:center; animation:charBlink 5s infinite; }
+.comic-panel{ transition:transform .25s ease; will-change:transform; }
+@media (prefers-reduced-motion:reduce){ .char-idle,.char-eyes{ animation:none } }

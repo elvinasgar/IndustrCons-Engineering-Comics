@@ -532,7 +532,7 @@ function renderHome(){
         ${roles.map(r=>{
           const role = ROLES[r]; if(!role) return '';
           return `<div class="universe-card" onclick="goLibraryRole('${r}')">
-            <div class="uc-avatar">${role.emoji}</div>
+            <div class="uc-avatar">${buildPortrait(r)}</div>
             <div class="uc-name">${role.name}</div>
           </div>`;
         }).join('')}
@@ -985,7 +985,7 @@ function renderReaderNode(){
     return;
   }
 
-  const panelSvg = buildPanel(node.scene, node.roles, {sky:node.sky||"day", shoutIndex: node.dialogue?.length? Math.floor(Math.random()*node.roles.length):null});
+  const panelSvg = buildPanel(node.scene, node.roles, {sky:node.sky||"day", mood:(/^n(3b|4bb|4gb|4bg)$/.test(readerNodeId||"")?"tension":null), shoutIndex: node.dialogue?.length? Math.floor(Math.random()*node.roles.length):null});
   const bubbles = (node.dialogue||[]).map((d,i)=>`
     <div class="bubble ${d.side}" style="animation-delay:${i*0.18}s"><span class="speaker">${d.who}</span>${d.text}</div>
   `).join('');
@@ -1089,7 +1089,7 @@ function renderEnding(node){
   saveState();
 
   const stars = "⭐".repeat(e.stars)+"☆".repeat(5-e.stars);
-  const panelSvg = buildPanel(node.scene||readerStory.cover.scene, node.roles||[readerStory.cover.role], {sky:"day"});
+  const panelSvg = buildPanel(node.scene||readerStory.cover.scene, node.roles||[readerStory.cover.role], {sky:"day", mood:(e.stars>=4?"victory":(e.stars<=2?"tension":null))});
 
   document.getElementById("reader-body").innerHTML = `
     <div class="panel-wrap">
@@ -1266,3 +1266,15 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }, 900);
 });
 
+
+/* v4: subtle 3D tilt on comic panels (pointer devices only) */
+document.addEventListener("pointermove",(e)=>{
+  if(e.pointerType!=="mouse") return;
+  const p=e.target.closest&&e.target.closest(".comic-panel");
+  document.querySelectorAll(".comic-panel[data-tilt]").forEach(el=>{ if(el!==p){ el.style.transform=""; el.removeAttribute("data-tilt"); } });
+  if(!p) return;
+  const r=p.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+  p.setAttribute("data-tilt","1");
+  p.style.transform=`perspective(900px) rotateY(${(x*5).toFixed(2)}deg) rotateX(${(-y*5).toFixed(2)}deg)`;
+});

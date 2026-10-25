@@ -4,13 +4,14 @@
    after the first visit. Bump CACHE_NAME whenever files change
    so returning visitors get the fresh version.
    ============================================================ */
-const CACHE_NAME = "industrcons-comics-v3";
+const CACHE_NAME = "industrcons-comics-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./illustrations.js",
   "./data.js",
+  "./data-extra.js",
   "./app.js",
   "./assets/logo.png",
   "./assets/logo-og.jpg"

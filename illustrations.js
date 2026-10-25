@@ -189,70 +189,168 @@ const SCENES = {
   `,
 };
 
-// pose overlays drawn relative to a character's local origin
-function poseOverlay(pose){
-  switch(pose){
-    case "point": return `<line x1="0" y1="175" x2="46" y2="150" stroke="#ffdcb0" stroke-width="9" stroke-linecap="round"/>`;
-    case "thumbsUp": return `<circle cx="26" cy="182" r="9" fill="#ffdcb0" stroke="#10151d" stroke-width="2"/>`;
-    case "thumbsDown": return `<circle cx="26" cy="210" r="9" fill="#ffdcb0" stroke="#10151d" stroke-width="2"/>`;
-    case "clipboard": return `<rect x="16" y="168" width="20" height="26" rx="2" fill="#fff" stroke="#10151d" stroke-width="2"/>`;
+// ============================================================
+// v3 CHARACTERS — fully drawn full-body comic engineers
+// ============================================================
+const SKIN = ["#ffd9b3","#f1c08f","#d9a066","#b87a4b","#8d5a36"];
+const HAIR = ["#2a1b12","#4a2e1a","#1a1a1f","#6b3f1f","#8a8a90"];
+const FEMALE = { qa_engineer:1, planning_eng:1, bim_engineer:1, procurement_eng:1, hse_officer:1, surveyor:0, mep_eng:1 };
+function roleSeed(role){ let h=0; for(let i=0;i<role.length;i++){ h=(h*31+role.charCodeAt(i))>>>0; } return h; }
+
+// role props drawn near the right hand (local coords, feet at y=0)
+function roleProp(role){
+  switch(role){
+    case "qa_engineer": return `<g transform="translate(34,-72) rotate(12)"><rect x="-9" y="-12" width="18" height="24" rx="2" fill="#fff" stroke="#10151d" stroke-width="2"/><rect x="-5" y="-16" width="10" height="5" rx="1" fill="#8a94a3" stroke="#10151d" stroke-width="1.5"/><path d="M-5 -4h10M-5 1h10M-5 6h6" stroke="#2fae66" stroke-width="1.5"/></g>`;
+    case "bim_engineer": return `<g transform="translate(34,-74) rotate(8)"><rect x="-14" y="-10" width="28" height="20" rx="3" fill="#0e2745" stroke="#10151d" stroke-width="2"/><rect x="-11" y="-7" width="22" height="14" rx="1.5" fill="#3a7bd5"/><path d="M-8 3l5-6 4 4 5-7 5 9" stroke="#fff" stroke-width="1.5" fill="none"/></g>`;
+    case "surveyor": return `<g transform="translate(40,0)"><path d="M0 -86l-16 86M0 -86l16 86M0 -86v86" stroke="#5b6675" stroke-width="3"/><rect x="-10" y="-104" width="20" height="18" rx="3" fill="#f9b233" stroke="#10151d" stroke-width="2"/><circle cx="0" cy="-95" r="4" fill="#0e2745"/></g>`;
+    case "qs": return `<g transform="translate(34,-70) rotate(10)"><rect x="-9" y="-12" width="18" height="24" rx="3" fill="#2f5fa0" stroke="#10151d" stroke-width="2"/><rect x="-6" y="-9" width="12" height="6" fill="#bfe3ff"/><g fill="#fff"><circle cx="-4" cy="2" r="1.6"/><circle cx="0" cy="2" r="1.6"/><circle cx="4" cy="2" r="1.6"/><circle cx="-4" cy="7" r="1.6"/><circle cx="0" cy="7" r="1.6"/><circle cx="4" cy="7" r="1.6"/></g></g>`;
+    case "project_manager": case "procurement_eng": case "planning_eng": return `<g transform="translate(32,-70) rotate(6)"><rect x="-13" y="-10" width="26" height="20" fill="#e9f1fb" stroke="#10151d" stroke-width="2"/><path d="M-9 -4h18M-9 1h12M-9 6h16" stroke="#3a7bd5" stroke-width="1.6"/></g>`;
+    case "hse_officer": return `<g transform="translate(32,-74)"><rect x="-11" y="-9" width="22" height="18" rx="3" fill="#2fae66" stroke="#10151d" stroke-width="2"/><path d="M-3 -5h6v4h4v6h-4v4h-6v-4h-4v-6h4z" transform="scale(.9) translate(0,0)" fill="#fff"/></g>`;
+    case "geotech_eng": return `<g transform="translate(34,-26)"><path d="M-3 -52v52" stroke="#8a5a2b" stroke-width="4"/><path d="M-3 0l-5 10h10z" fill="#5b6675" stroke="#10151d" stroke-width="1.5"/><rect x="-9" y="-58" width="12" height="7" rx="1" fill="#f5941f" stroke="#10151d" stroke-width="1.5"/></g>`;
+    case "crane_operator": return `<path d="M-20 -150q-8 10 -2 24" stroke="#10151d" stroke-width="3" fill="none"/><circle cx="-22" cy="-128" r="5" fill="#10151d"/><path d="M-22 -128q4 12 12 14" stroke="#10151d" stroke-width="2" fill="none"/>`;
+    case "rebar_eng": return `<g transform="translate(36,-30)"><rect x="-3" y="-62" width="6" height="62" fill="#8a5a2b" stroke="#10151d" stroke-width="1.5" transform="rotate(10)"/><g stroke="#8a94a3" stroke-width="3"><path d="M-8 -20l24 -6M-8 -12l24 -6"/></g></g>`;
+    case "formwork_eng": return `<g transform="translate(36,-20) rotate(14)"><rect x="-4" y="-36" width="8" height="36" fill="#c58b4a" stroke="#10151d" stroke-width="1.5"/><rect x="-10" y="-40" width="20" height="8" fill="#8a94a3" stroke="#10151d" stroke-width="1.5"/></g>`;
+    case "concrete_insp": return `<g transform="translate(34,-8)"><path d="M-9 -26h18l-3 26h-12z" fill="#f5941f" stroke="#10151d" stroke-width="2"/><ellipse cx="0" cy="-26" rx="9" ry="3" fill="#c9d3de" stroke="#10151d" stroke-width="1.5"/></g>`;
+    case "bridge_eng": case "highway_eng": return `<g transform="translate(33,-72) rotate(-8)"><path d="M-15 8l8-24 22 4-6 24z" fill="#cfe3f6" stroke="#10151d" stroke-width="2"/><path d="M-8 -2l16 3M-9 3l12 2" stroke="#1c4b82" stroke-width="1.4"/></g>`;
+    case "mep_eng": return `<g transform="translate(34,-72) rotate(16)"><path d="M0 -14v26" stroke="#8a94a3" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="-16" r="6" fill="none" stroke="#8a94a3" stroke-width="4"/></g>`;
     default: return '';
   }
 }
 
 function charFigure(role, x, opts={}){
   const r = ROLES[role] || ROLES.site_engineer;
-  const helmet = r.helmet || "#c9d3de";
-  const vest = r.vest || "#8a94a3";
-  const shout = opts.shout;
+  const seed = roleSeed(role);
+  const skin = SKIN[seed % SKIN.length];
+  const hairC = HAIR[(seed>>>3) % HAIR.length];
+  const female = FEMALE[role]===1;
+  const suit = role==="client";
+  const helmet = r.helmet;
+  const vest = r.vest || "#2b3445";
+  const shirt = suit ? "#e9eef5" : "#e8edf3";
+  const pants = suit ? "#1d2433" : "#2b3a55";
+  const look = opts.look||0;               // -1 look left, 1 look right
+  const pose = opts.pose;
+  const scale = opts.scale || 1;
+  const ink = "#10151d";
+  const mouth = opts.shout
+    ? `<ellipse cx="0" cy="-130" rx="6" ry="5.5" fill="#6b1d1d" stroke="${ink}" stroke-width="1.8"/><ellipse cx="0" cy="-128" rx="3.5" ry="2" fill="#e5707a"/>`
+    : `<path d="M-6 -131q6 6 12 0" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>`;
+  // arms
+  let rightArm = `<path d="M26 -108q10 24 4 46" stroke="${shirt}" stroke-width="11" fill="none" stroke-linecap="round"/><circle cx="30" cy="-60" r="6.5" fill="${suit?skin:'#f5941f'}" stroke="${ink}" stroke-width="2"/>`;
+  if(pose==="point") rightArm = `<path d="M26 -108l40 -22" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><circle cx="68" cy="-131" r="6.5" fill="#f5941f" stroke="${ink}" stroke-width="2"/><path d="M72 -133l10 -5" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`;
+  if(pose==="thumbsUp") rightArm = `<path d="M26 -108l22 -14" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><circle cx="50" cy="-124" r="7" fill="#f5941f" stroke="${ink}" stroke-width="2"/><rect x="47" y="-136" width="5" height="10" rx="2.5" fill="#f5941f" stroke="${ink}" stroke-width="1.6"/>`;
+  if(pose==="wave") rightArm = `<path d="M26 -108l26 -34" stroke="${shirt}" stroke-width="11" stroke-linecap="round"/><circle cx="54" cy="-146" r="7" fill="#f5941f" stroke="${ink}" stroke-width="2"/>`;
+  const hairBack = female ? `<path d="M-20 -146q-10 24 -2 42q8 -8 6 -30z" fill="${hairC}" stroke="${ink}" stroke-width="2"/>` : '';
+  const hairFront = suit || !helmet ? `<path d="M-20 -150q20 -22 40 0q-6 -8 -20 -8q-14 0 -20 8z" fill="${hairC}" stroke="${ink}" stroke-width="2"/>` : '';
+  const headgear = helmet ? `
+      <path d="M-24 -148a24 22 0 0 1 48 0z" fill="${helmet}" stroke="${ink}" stroke-width="2.6"/>
+      <path d="M-4 -170v22M4 -170v22" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+      <path d="M-27 -148h54q0 5 -5 5h-44q-5 0 -5 -5z" fill="${helmet}" stroke="${ink}" stroke-width="2.4"/>
+      <path d="M-16 -160q8 -8 18 -6" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none" stroke-linecap="round"/>` : '';
+  const tie = suit ? `<path d="M0 -112l5 10l-5 30l-5 -30z" fill="#c0392b" stroke="${ink}" stroke-width="1.6"/>` : '';
+  const vestShape = suit
+    ? `<path d="M-26 -112h52v62h-52z" fill="#2b3445" stroke="${ink}" stroke-width="2.6"/><path d="M-6 -112l6 18l6 -18z" fill="#fff" stroke="${ink}" stroke-width="1.4"/>${tie}`
+    : `<path d="M-26 -112q26 -10 52 0v64h-52z" fill="${vest}" stroke="${ink}" stroke-width="2.6"/>
+       <path d="M-8 -112l8 14l8 -14" fill="${shirt}" stroke="${ink}" stroke-width="1.6"/>
+       <rect x="-26" y="-92" width="52" height="7" fill="#e9f2f5" opacity=".92"/><rect x="-26" y="-72" width="52" height="7" fill="#e9f2f5" opacity=".92"/>
+       <path d="M-11 -108v60M11 -108v60" stroke="#e9f2f5" stroke-width="5" opacity=".9"/>`;
+  const sk = 3 * (look);
   return `
-    <g transform="translate(${x},0)">
-      <ellipse cx="0" cy="248" rx="34" ry="10" fill="rgba(16,21,29,.18)"/>
-      <circle cx="0" cy="150" r="46" fill="${helmet}" opacity=".16"/>
-      <rect x="-24" y="150" width="48" height="80" rx="14" fill="${vest}" stroke="#10151d" stroke-width="3"/>
-      <rect x="-24" y="150" width="48" height="18" fill="#f5f5f5" opacity=".85"/>
-      <rect x="-24" y="150" width="10" height="80" fill="#ffffff" opacity=".35"/>
-      <circle cx="0" cy="128" r="26" fill="#ffdcb0" stroke="#10151d" stroke-width="3"/>
-      <path d="M -26 118 a 26 22 0 0 1 52 0 z" fill="${helmet}" stroke="#10151d" stroke-width="3"/>
-      <rect x="-27" y="112" width="54" height="8" rx="4" fill="${helmet}" stroke="#10151d" stroke-width="2"/>
-      ${poseOverlay(opts.pose)}
-      <text x="0" y="240" text-anchor="middle" font-size="30">${r.emoji}</text>
-      ${shout?`<circle cx="32" cy="92" r="17" fill="#fff" stroke="#10151d" stroke-width="3"/><text x="32" y="99" text-anchor="middle" font-size="19" font-weight="bold">!</text>`:''}
-    </g>
-  `;
+    <g transform="translate(${x},300) scale(${scale})">
+      <ellipse cx="0" cy="2" rx="40" ry="9" fill="rgba(10,14,22,.28)"/>
+      <g class="char-idle" style="animation-delay:${((seed%7)*.35).toFixed(2)}s">
+        <!-- legs -->
+        <path d="M-15 -52v44" stroke="${pants}" stroke-width="15" stroke-linecap="round"/>
+        <path d="M15 -52v44" stroke="${pants}" stroke-width="15" stroke-linecap="round"/>
+        <path d="M-24 -6h18q4 0 4 6h-26q0 -6 4 -6z" fill="#3b2a1d" stroke="${ink}" stroke-width="2.4"/>
+        <path d="M6 -6h18q4 0 4 6h-26q0 -6 4 -6z" fill="#3b2a1d" stroke="${ink}" stroke-width="2.4"/>
+        <!-- left arm -->
+        <path d="M-26 -108q-10 24 -4 46" stroke="${shirt}" stroke-width="11" fill="none" stroke-linecap="round"/>
+        <circle cx="-30" cy="-60" r="6.5" fill="${suit?skin:'#f5941f'}" stroke="${ink}" stroke-width="2"/>
+        ${hairBack}
+        <!-- torso -->
+        <rect x="-26" y="-116" width="52" height="68" rx="12" fill="${shirt}"/>
+        ${vestShape}
+        <!-- neck + head -->
+        <rect x="-6" y="-122" width="12" height="12" fill="${skin}" stroke="${ink}" stroke-width="2"/>
+        <circle cx="-22" cy="-138" r="4.5" fill="${skin}" stroke="${ink}" stroke-width="2"/>
+        <circle cx="22" cy="-138" r="4.5" fill="${skin}" stroke="${ink}" stroke-width="2"/>
+        <circle cx="0" cy="-138" r="22" fill="${skin}" stroke="${ink}" stroke-width="2.6"/>
+        ${hairFront}
+        <!-- face -->
+        <g class="char-eyes">
+          <ellipse cx="-8" cy="-140" rx="4.6" ry="5.4" fill="#fff" stroke="${ink}" stroke-width="1.6"/>
+          <ellipse cx="8" cy="-140" rx="4.6" ry="5.4" fill="#fff" stroke="${ink}" stroke-width="1.6"/>
+          <circle cx="${-8+sk}" cy="-139.5" r="2.3" fill="${ink}"/><circle cx="${8+sk}" cy="-139.5" r="2.3" fill="${ink}"/>
+        </g>
+        <path d="M-13 -148q5 -4 10 -1M3 -149q5 -3 10 1" stroke="${ink}" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M0 -138q-2 5 1 6" stroke="rgba(0,0,0,.35)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        ${mouth}
+        ${headgear}
+        ${rightArm}
+        ${roleProp(role)}
+      </g>
+      ${opts.shout?`<g transform="translate(40,-176)"><path d="M0 0q-4 14 10 14q16 0 14 -14q-2 -14 -16 -14q-14 2 -8 14z" fill="#fff" stroke="${ink}" stroke-width="2.6"/><text x="9" y="8" text-anchor="middle" font-size="20" font-weight="800" fill="${ink}">!</text></g>`:''}
+    </g>`;
+}
+
+// head-and-shoulders portrait for the Construction Universe row
+function buildPortrait(role){
+  const uid = ++__svgIdCounter;
+  const r = ROLES[role] || ROLES.site_engineer;
+  return `<svg viewBox="-46 -182 92 112" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <defs><radialGradient id="pg${uid}" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="${r.helmet||'#8ab4e8'}" stop-opacity=".55"/><stop offset="1" stop-color="#0d1420" stop-opacity=".9"/></radialGradient></defs>
+    <rect x="-46" y="-182" width="92" height="112" fill="url(#pg${uid})"/>
+    <g transform="translate(0,300) scale(1)" style="transform:none">${charFigure(role,0,{}).replace('translate(0,300) scale(1)','translate(0,0)')}</g>
+  </svg>`;
+}
+
+// foreground props + atmosphere --------------------------------------------
+function foregroundProps(sceneKey){
+  const indoor = ["lab","office","meeting"].includes(sceneKey);
+  if(indoor) return `<rect x="0" y="332" width="600" height="28" fill="rgba(10,14,22,.25)"/>`;
+  const cone = (x)=>`<g transform="translate(${x},352)"><path d="M-10 0l6 -26h8l6 26z" fill="#f5941f" stroke="#10151d" stroke-width="2"/><rect x="-5" y="-17" width="10" height="4" fill="#fff"/><rect x="-14" y="-2" width="28" height="4" rx="1.5" fill="#10151d"/></g>`;
+  return `${cone(30)}${cone(572)}
+    <g transform="translate(112,356)"><rect x="-30" y="-14" width="60" height="9" fill="#f9b233" stroke="#10151d" stroke-width="2"/><path d="M-26 -14l8 9M-12 -14l8 9M2 -14l8 9M16 -14l8 9" stroke="#10151d" stroke-width="2.4"/><rect x="-26" y="-5" width="4" height="9" fill="#5b6675"/><rect x="22" y="-5" width="4" height="9" fill="#5b6675"/></g>`;
+}
+
+function atmosphere(uid, mood){
+  const vig = mood==="tension" ? "rgba(120,10,16,.38)" : mood==="victory" ? "rgba(255,200,80,.0)" : "rgba(5,8,14,.30)";
+  const rays = mood==="victory" ? `<g opacity=".28" fill="#fff6c9">${Array.from({length:9}).map((_,i)=>`<polygon points="300,150 ${(i*80-60)},0 ${(i*80-20)},0"/>`).join('')}</g>
+    <g fill="#ffd34d">${Array.from({length:14}).map(()=>`<path transform="translate(${(Math.random()*580+10).toFixed(0)},${(Math.random()*180+10).toFixed(0)}) scale(${(Math.random()*.6+.5).toFixed(2)})" d="M0 -8l2.2 5.8l6 .2l-4.8 3.8l1.8 5.8l-5.2 -3.4l-5.2 3.4l1.8 -5.8l-4.8 -3.8l6 -.2z" opacity=".9"/>`).join('')}</g>` : '';
+  const impact = mood==="tension" ? `<g stroke="#fff" stroke-width="3" opacity=".55">${Array.from({length:14}).map((_,i)=>{const a=i*(360/14)*Math.PI/180;return `<line x1="${(300+Math.cos(a)*190).toFixed(0)}" y1="${(150+Math.sin(a)*120).toFixed(0)}" x2="${(300+Math.cos(a)*300).toFixed(0)}" y2="${(150+Math.sin(a)*220).toFixed(0)}"/>`;}).join('')}</g>` : '';
+  return `<defs><radialGradient id="vg${uid}" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="${vig}"/></radialGradient></defs>
+    ${rays}${impact}<rect width="600" height="360" fill="url(#vg${uid})"/>`;
 }
 
 /**
  * Build a full comic panel SVG.
- * @param {string} sceneKey - key in SCENES
- * @param {string[]} roleKeys - array of role keys to render
- * @param {object} opts - {sky, weather:'rain'|'wind'|null, shoutIndex, poses:[...], impact:bool}
+ * opts: {sky, weather:'rain'|'wind'|null, shoutIndex, poses:[...], mood:'tension'|'victory'|null}
  */
 function buildPanel(sceneKey, roleKeys=['site_engineer'], opts={}){
   __svgIdCounter++;
   const uid = __svgIdCounter;
   const bgFn = SCENES[sceneKey] || SCENES.site;
-  const positions = roleKeys.length===1 ? [300] : roleKeys.length===2 ? [220,380] : [150,300,450];
+  const n = roleKeys.length;
+  const positions = n===0 ? [] : n===1 ? [300] : n===2 ? [195,405] : [120,300,480];
+  const scale = n>=3 ? .86 : 1;
   const poses = opts.poses || [];
-  const figures = roleKeys.map((rk,i)=>charFigure(rk, positions[i], {shout:opts.shoutIndex===i, pose:poses[i]})).join('');
-  const impactBurst = opts.impact ? `
-    <g opacity=".5" stroke="#fff" stroke-width="4">
-      ${Array.from({length:10}).map((_,i)=>{
-        const ang = i*36 * Math.PI/180, cx=500, cy=70;
-        const x2 = cx+Math.cos(ang)*36, y2=cy+Math.sin(ang)*36;
-        const x1 = cx+Math.cos(ang)*18, y1=cy+Math.sin(ang)*18;
-        return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
-      }).join('')}
-    </g>` : '';
+  const defaultPoses = n===2 ? ["point","clipboard"] : n===3 ? ["clipboard","wave","point"] : [];
+  const figures = roleKeys.map((rk,i)=>{
+    const centre = 300;
+    const look = n===1 ? 0 : (positions[i] < centre ? 1 : (positions[i] > centre ? -1 : 0));
+    return charFigure(rk, positions[i], {shout:opts.shoutIndex===i, pose:poses[i]||defaultPoses[i], look, scale});
+  }).join('');
+  const mood = opts.mood || (opts.impact ? "tension" : null);
   return `<svg viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice">
     ${skyLayer(uid, opts.sky || 'day', opts.weather)}
     ${bgFn()}
     ${figures}
-    ${impactBurst}
+    ${foregroundProps(sceneKey)}
+    ${atmosphere(uid, mood)}
   </svg>`;
 }
 
-// Small cover thumbnail for cards — reuses same engine
 function buildCover(sceneKey, roleKey, opts={}){
-  return buildPanel(sceneKey, roleKey?[roleKey]:[], {sky:opts.sky||'day', weather:opts.weather});
+  return buildPanel(sceneKey, roleKey?[roleKey]:[], {sky:opts.sky||'day', weather:opts.weather, mood:opts.mood});
 }
